@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Programação de Lançamentos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f6f3ef;
+      color: #1f1f1f;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    select, input {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .line {
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .empty {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Programação de Lançamentos</h1>
+
+    <div class="filters">
+      <select id="pais">
+        <option value="">Todos os países</option>
+        <option value="brasil">Brasil</option>
+        <option value="paraguai">Paraguai</option>
+        <option value="uruguai">Uruguai</option>
+        <option value="chile">Chile</option>
+      </select>
+
+      <input id="busca" placeholder="Buscar produto ou referência" />
+    </div>
+
+    <div id="meta">Carregando...</div>
+    <br />
+    <div id="app" class="grid"></div>
+  </div>
+
+  <script>
+    const API = "SUA_URL_DO_APPS_SCRIPT_AQUI";
+    let data = [];
+
+    function safe(v) {
+      return v === null || v === undefined || v === "" ? "-" : v;
+    }
+
+    function carregar(res) {
+      if (res && res.error) {
+        document.getElementById("meta").innerText = "Erro ao carregar";
+        document.getElementById("app").innerHTML = `<div class="empty">${res.message}</div>`;
+        return;
+      }
+
+      data = Array.isArray(res) ? res : [];
+      render();
+    }
+
+    function load() {
+      const old = document.getElementById("jsonp-script");
+      if (old) old.remove();
+
+      const pais = document.getElementById("pais").value;
+      const url = API + "?callback=carregar" + (pais ? "&pais=" + encodeURIComponent(pais) : "");
+
+      const s = document.createElement("script");
+      s.id = "jsonp-script";
+      s.src = url + "&t=" + Date.now();
+      document.body.appendChild(s);
+    }
+
+    function render() {
+      const busca = document.getElementById("busca").value.toLowerCase().trim();
+
+      const filtrados = data.filter(item => {
+        const produto = String(item.Produto || "").toLowerCase();
+        const referencia = String(item.Referencia || item["Referência"] || "").toLowerCase();
+        return !busca || produto.includes(busca) || referencia.includes(busca);
+      });
+
+      document.getElementById("meta").innerText = filtrados.length + " itens";
+
+      const app = document.getElementById("app");
+
+      if (!filtrados.length) {
+        app.innerHTML = `<div class="empty">Nenhum item encontrado.</div>`;
+        return;
+      }
+
+      app.innerHTML = filtrados.map(item => `
+        <div class="card">
+          <div class="title">${safe(item.Produto)}</div>
+          <div class="line"><strong>País:</strong> ${safe(item.Pais || item.País)}</div>
+          <div class="line"><strong>Ref:</strong> ${safe(item.Referencia || item["Referência"])}</div>
+          <div class="line"><strong>Edição:</strong> ${safe(item.Edicao || item["Edição"])}</div>
+          <div class="line"><strong>Lançamento:</strong> ${safe(item.Lancamento || item["Lançamento"])}</div>
+          <div class="line"><strong>Caderno:</strong> ${safe(item.Caderno)}</div>
+          <div class="line"><strong>Cor:</strong> ${safe(item.Cor)}</div>
+          <div class="line"><strong>Grade:</strong> ${safe(item.Grade)}</div>
+          <div class="line"><strong>Fornecedor:</strong> ${safe(item.Fornecedor)}</div>
+          <div class="line"><strong>Custo:</strong> ${safe(item.Custo)}</div>
+          <div class="line"><strong>PDV:</strong> ${safe(item.PDV)}</div>
+          <div class="line"><strong>Margem:</strong> ${safe(item.Margem)}</div>
+        </div>
+      `).join("");
+    }
+
+    document.getElementById("pais").onchange = load;
+    document.getElementById("busca").oninput = render;
+
+    load();
+  </script>
+</body>
+</html>
