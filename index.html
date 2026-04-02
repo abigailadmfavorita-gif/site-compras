@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Programação de Lançamentos Favorita</title>
+  <link rel="icon" type="image/png" href="favicon-favorita.png" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f6f3ef;
+      color: #1f1f1f;
+    }
+
+    .container {
+      width: min(1320px, 95%);
+      margin: 0 auto;
+      padding: 30px 0 40px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    #meta {
+      font-size: 14px;
+      color: #6f675f;
+      padding-top: 6px;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    select,
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #d7cec2;
+      background: #fff;
+      font-size: 14px;
+      color: #1f1f1f;
+      outline: none;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: #fff;
+      padding: 15px;
+      border-radius: 12px;
+      border: 1px solid #ebe2d8;
+    }
+
+    .card-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #8a7c6d;
+      margin-bottom: 8px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .card-value {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+    }
+
+    .product {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #ebe2d8;
+    }
+
+    .image-box {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: #f0ebe4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .no-image {
+      color: #8a7c6d;
+      font-size: 14px;
+    }
+
+    .info {
+      padding: 14px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .product-name {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .meta-line {
+      margin-bottom: 4px;
+    }
+
+    .meta-line strong {
+      font-weight: 700;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #f0ebe4;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #5f554a;
+      text-transform: capitalize;
+    }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      background: #fff;
+      border: 1px solid #ebe2d8;
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      color: #6f675f;
+    }
+
+    @media (max-width: 1200px) {
+      .grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .summary,
+      .filters {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .filters,
+      .summary {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 560px) {
+      .topbar {
+        flex-direction: column;
+      }
+
+      .filters,
+      .summary,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <h1>Programação de Lançamentos Favorita</h1>
+      <span id="meta">Carregando...</span>
+    </div>
+
+    <div class="filters">
+      <select id="pais">
+        <option value="brasil">Brasil</option>
+        <option value="paraguai">Paraguai</option>
+        <option value="uruguai">Uruguai</option>
+        <option value="chile">Chile</option>
+      </select>
+
+      <select id="edicao">
+        <option value="">Todas Edições</option>
+      </select>
+
+      <select id="caderno">
+        <option value="">Todos Cadernos</option>
+      </select>
+
+      <input id="busca" placeholder="Buscar produto ou referência..." />
+    </div>
+
+    <div class="summary">
+      <div class="card">
+        <div class="card-title">Itens</div>
+        <div class="card-value" id="itens">0</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Edições</div>
+        <div class="card-value" id="eds">0</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Cadernos</div>
+        <div class="card-value" id="cads">0</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">PDV Médio</div>
+        <div class="card-value" id="pdvMedio">R$ 0,00</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Margem Média</div>
+        <div class="card-value" id="margemMedia">0,0%</div>
+      </div>
+    </div>
+
+    <div id="app" class="grid"></div>
+  </div>
+
+  <script>
+    const API = "https://script.google.com/macros/s/AKfycbwyh88du3DSQXCEo-T5dAuEtVqLB13lkyjzyGm6Bj4_zNh7FGXf6xbnBIZBg6ILFKTA/exec";
+
+    let data = [];
+
+    function normalizeKey(str) {
+      return String(str || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .toLowerCase();
+    }
+
+    function getField(row, aliases) {
+      if (!row || typeof row !== "object") return "";
+
+      for (const alias of aliases) {
+        if (Object.prototype.hasOwnProperty.call(row, alias)) {
+          return row[alias];
+        }
+      }
+
+      const normalizedMap = {};
+      Object.keys(row).forEach(key => {
+        normalizedMap[normalizeKey(key)] = row[key];
+      });
+
+      for (const alias of aliases) {
+        const found = normalizedMap[normalizeKey(alias)];
+        if (found !== undefined && found !== null) {
+          return found;
+        }
+      }
+
+      return "";
+    }
+
+    function num(v) {
+      if (v === null || v === undefined || v === "") return 0;
+
+      const raw = String(v)
+        .trim()
+        .replace("R$", "")
+        .replace("$", "")
+        .replace("%", "")
+        .replace(/\s/g, "");
+
+      let n;
+
+      if (raw.includes(",") && raw.includes(".")) {
+        n = Number(raw.replace(/\./g, "").replace(",", "."));
+      } else if (raw.includes(",")) {
+        n = Number(raw.replace(",", "."));
+      } else {
+        n = Number(raw);
+      }
+
+      return isNaN(n) ? 0 : n;
+    }
+
+    function formatMoneyBRL(v) {
+      return Number(v || 0).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
+    }
+
+    function formatPercent(v) {
+      return (Number(v || 0) * 100).toLocaleString("pt-BR", {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1
+      }) + "%";
+    }
+
+    function uniqueSorted(values) {
+      return [...new Set(values.filter(Boolean))].sort((a, b) =>
+        String(a).localeCompare(String(b), "pt-BR", { numeric: true })
+      );
+    }
+
+    function getPais(row) {
+      return getField(row, ["Região", "Regiao", "Pais", "País"]) || "";
+    }
+
+    function getEdicao(row) {
+      return getField(row, ["Edição", "Edicao", "Edição "]) || "";
+    }
+
+    function getLancamento(row) {
+      return getField(row, ["Lançamento", "Lancamento", "LANÇAMENTO NO BRASIL"]) || "";
+    }
+
+    function getCaderno(row) {
+      return getField(row, ["Caderno"]) || "";
+    }
+
+    function getReferencia(row) {
+      return getField(row, ["Referência", "Referencia"]) || "-";
+    }
+
+    function getProduto(row) {
+      return getField(row, ["Produto"]) || "-";
+    }
+
+    function getCor(row) {
+      return getField(row, ["Cor/ Característica", "Cor/Característica", "Cor", "Característica"]) || "-";
+    }
+
+    function getGrade(row) {
+      return getField(row, ["Grade"]) || "-";
+    }
+
+    function getFornecedor(row) {
+      return getField(row, ["Fornecedor"]) || "-";
+    }
+
+    function getCusto(row) {
+      return num(getField(row, [" Custo ", "Custo", "Custo "]));
+    }
+
+    function getPDV(row) {
+      return num(getField(row, ["Sugestão PDV", "Sugestao PDV", " PDV CONV ", "PDV CONV", "PDV"]));
+    }
+
+    function getMargem(row) {
+      const margem = num(getField(row, [" %Margem ", "%Margem", "Margem"]));
+      if (!margem) return 0;
+      return margem > 1 ? margem / 100 : margem;
+    }
+
+    function carregar(d) {
+      if (d && d.error) {
+        document.getElementById("meta").innerText = "Erro ao carregar";
+        document.getElementById("app").innerHTML =
+          `<div class="empty-state">${d.message || "Erro na API"}</div>`;
+        return;
+      }
+
+      data = Array.isArray(d) ? d : [];
+      montarFiltros();
+      render();
+    }
+
+    function montarFiltros() {
+      const edicaoSelect = document.getElementById("edicao");
+      const cadernoSelect = document.getElementById("caderno");
+
+      const edicaoAtual = edicaoSelect.value;
+      const cadernoAtual = cadernoSelect.value;
+
+      const edicoes = uniqueSorted(data.map(r => getEdicao(r)));
+      const cadernos = uniqueSorted(data.map(r => getCaderno(r)));
+
+      edicaoSelect.innerHTML = '<option value="">Todas Edições</option>';
+      cadernoSelect.innerHTML = '<option value="">Todos Cadernos</option>';
+
+      edicoes.forEach(v => edicaoSelect.add(new Option(v, v)));
+      cadernos.forEach(v => cadernoSelect.add(new Option(v, v)));
+
+      if (edicoes.includes(edicaoAtual)) edicaoSelect.value = edicaoAtual;
+      if (cadernos.includes(cadernoAtual)) cadernoSelect.value = cadernoAtual;
+    }
+
+    function filtrar() {
+      const ed = document.getElementById("edicao").value;
+      const cad = document.getElementById("caderno").value;
+      const b = document.getElementById("busca").value.toLowerCase().trim();
+
+      return data.filter(r => {
+        const edOk = !ed || getEdicao(r) === ed;
+        const cadOk = !cad || getCaderno(r) === cad;
+
+        const buscaOk =
+          !b ||
+          String(getProduto(r)).toLowerCase().includes(b) ||
+          String(getReferencia(r)).toLowerCase().includes(b);
+
+        return edOk && cadOk && buscaOk;
+      });
+    }
+
+    function render() {
+      const list = filtrar();
+
+      document.getElementById("meta").innerText = list.length + " itens";
+      document.getElementById("itens").innerText = list.length;
+      document.getElementById("eds").innerText =
+        [...new Set(list.map(x => getEdicao(x)).filter(Boolean))].length;
+      document.getElementById("cads").innerText =
+        [...new Set(list.map(x => getCaderno(x)).filter(Boolean))].length;
+
+      const pdvs = list.map(x => getPDV(x)).filter(v => v > 0);
+      const margens = list.map(x => getMargem(x)).filter(v => v > 0);
+
+      const pdvMedio = pdvs.length
+        ? pdvs.reduce((a, b) => a + b, 0) / pdvs.length
+        : 0;
+
+      const margemMedia = margens.length
+        ? margens.reduce((a, b) => a + b, 0) / margens.length
+        : 0;
+
+      document.getElementById("pdvMedio").innerText = formatMoneyBRL(pdvMedio);
+      document.getElementById("margemMedia").innerText = formatPercent(margemMedia);
+
+      const app = document.getElementById("app");
+
+      if (!list.length) {
+        app.innerHTML = '<div class="empty-state">Nenhum produto encontrado com os filtros atuais.</div>';
+        return;
+      }
+
+      app.innerHTML = list.map(p => `
+        <div class="product">
+          <div class="image-box">
+            <div class="no-image">Sem imagem</div>
+          </div>
+
+          <div class="info">
+            <div class="product-name">${getProduto(p)}</div>
+            <div class="status-pill">${getPais(p) || "-"}</div>
+
+            <div class="meta-line"><strong>Ref:</strong> ${getReferencia(p)}</div>
+            <div class="meta-line"><strong>Edição:</strong> ${getEdicao(p) || "-"}</div>
+            <div class="meta-line"><strong>Lançamento:</strong> ${getLancamento(p) || "-"}</div>
+            <div class="meta-line"><strong>Caderno:</strong> ${getCaderno(p) || "-"}</div>
+            <div class="meta-line"><strong>Cor:</strong> ${getCor(p)}</div>
+            <div class="meta-line"><strong>Grade:</strong> ${getGrade(p)}</div>
+            <div class="meta-line"><strong>Fornecedor:</strong> ${getFornecedor(p)}</div>
+            <div class="meta-line"><strong>Custo:</strong> ${formatMoneyBRL(getCusto(p))}</div>
+            <div class="meta-line"><strong>PDV:</strong> ${formatMoneyBRL(getPDV(p))}</div>
+            <div class="meta-line"><strong>Margem:</strong> ${formatPercent(getMargem(p))}</div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function load() {
+      const old = document.getElementById("jsonp-script");
+      if (old) old.remove();
+
+      const pais = document.getElementById("pais").value || "brasil";
+
+      const s = document.createElement("script");
+      s.id = "jsonp-script";
+      s.src = API + "?pais=" + encodeURIComponent(pais) + "&callback=carregar&t=" + Date.now();
+      document.body.appendChild(s);
+    }
+
+    document.getElementById("pais").onchange = function () {
+      document.getElementById("edicao").value = "";
+      document.getElementById("caderno").value = "";
+      document.getElementById("busca").value = "";
+      load();
+    };
+
+    document.getElementById("edicao").onchange = render;
+    document.getElementById("caderno").onchange = render;
+    document.getElementById("busca").oninput = render;
+
+    load();
+    setInterval(load, 30000);
+  </script>
+</body>
+</html>
